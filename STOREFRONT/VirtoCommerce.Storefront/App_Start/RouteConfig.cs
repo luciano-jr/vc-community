@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FluentRouting.Mvc;
+using System;
 using System.Web.Mvc;
 using System.Web.Routing;
 using CacheManager.Core;
@@ -7,6 +8,8 @@ using VirtoCommerce.Storefront.Model;
 using VirtoCommerce.Storefront.Model.Services;
 using VirtoCommerce.Storefront.Routing;
 using VirtoCommerce.Storefront.Controllers.Api;
+using VirtoCommerce.Storefront.Controllers;
+using System.Net.Http;
 
 namespace VirtoCommerce.Storefront
 {
@@ -23,116 +26,118 @@ namespace VirtoCommerce.Storefront
 
             //routes.MapMvcAttributeRoutes();
 
-            #region Storefront API routes
+            #pragma warning disable 4014
 
-            //API cart
-            routes.MapLocalizedStorefrontRoute("API.GetCart", "storefrontapi/cart", defaults: new { controller = "ApiCart", action = "GetCart" });
-            routes.MapLocalizedStorefrontRoute("API.Cart.GetCartItemsCount", "storefrontapi/cart/itemscount", defaults: new { controller = "ApiCart", action = "GetCartItemsCount" });
-            routes.MapLocalizedStorefrontRoute("API.Cart.AddItemToCart", "storefrontapi/cart/items", defaults: new { controller = "ApiCart", action = "AddItemToCart" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            routes.MapLocalizedStorefrontRoute("API.Cart.ChangeCartItem", "storefrontapi/cart/items", defaults: new { controller = "ApiCart", action = "ChangeCartItem" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "PUT" }) });
-            routes.MapLocalizedStorefrontRoute("API.Cart.RemoveCartItem", "storefrontapi/cart/items", defaults: new { controller = "ApiCart", action = "RemoveCartItem" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "DELETE" }) });
-            routes.MapLocalizedStorefrontRoute("API.Cart.ClearCart", "storefrontapi/cart/clear", defaults: new { controller = "ApiCart", action = "ClearCart" });
-            routes.MapLocalizedStorefrontRoute("API.Cart.GetCartShipmentAvailShippingMethods", "storefrontapi/cart/shipments/{shipmentId}/shippingmethods", defaults: new { controller = "ApiCart", action = "GetCartShipmentAvailShippingMethods" });
-            routes.MapLocalizedStorefrontRoute("API.Cart.GetCartAvailPaymentMethods", "storefrontapi/cart/paymentmethods", defaults: new { controller = "ApiCart", action = "GetCartAvailPaymentMethods" });
-            routes.MapLocalizedStorefrontRoute("API.Cart.AddCartCoupon", "storefrontapi/cart/coupons/{couponCode}", defaults: new { controller = "ApiCart", action = "AddCartCoupon" });
-            routes.MapLocalizedStorefrontRoute("API.Cart.RemoveCartCoupon", "storefrontapi/cart/coupons", defaults: new { controller = "ApiCart", action = "RemoveCartCoupon" });
-            routes.MapLocalizedStorefrontRoute("API.Cart.AddOrUpdateCartShipment", "storefrontapi/cart/shipments", defaults: new { controller = "ApiCart", action = "AddOrUpdateCartShipment" });
-            routes.MapLocalizedStorefrontRoute("API.Cart.AddOrUpdateCartPayment", "storefrontapi/cart/payments", defaults: new { controller = "ApiCart", action = "AddOrUpdateCartPayment" });
-            routes.MapLocalizedStorefrontRoute("API.Cart.CreateOrder", "storefrontapi/cart/createorder", defaults: new { controller = "ApiCart", action = "CreateOrder" });
+            routes.For<ApiCartController>()
+                .CreateRoute("{store?}/{langauge?}/storefrontapi/cart").To(c => c.GetCart())
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/itemscount").To(c => c.GetCartItemsCount())
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/items").To(c => c.AddItemToCart(null, 1)).WithConstraints().HttpMethod(HttpMethod.Post)
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/items").To(c => c.ChangeCartItem(null, 1)).WithConstraints().HttpMethod(HttpMethod.Put)
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/items").To(c => c.RemoveCartItem(null)).WithConstraints().HttpMethod(HttpMethod.Delete)
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/clear").To(c => c.ClearCart())
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/shipments/{shipmentId}/shippingmethods").To(c => c.GetCartShipmentAvailShippingMethods(null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/paymentmethods").To(c => c.GetCartAvailPaymentMethods())
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/coupons/{couponCode}").To(c => c.AddCartCoupon(null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/coupons").To(c => c.RemoveCartCoupon())
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/shipments").To(c => c.AddOrUpdateCartShipment(null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/payments").To(c => c.AddOrUpdateCartPayment(null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/cart/createorder").To(c => c.CreateOrder(null));
 
-            //Catalog API
-            routes.MapLocalizedStorefrontRoute("API.Catalog.SearchProducts", "storefrontapi/catalog/search", defaults: new { controller = "ApiCatalog", action = "SearchProducts" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            routes.MapLocalizedStorefrontRoute("API.Catalog.GetProductsByIds", "storefrontapi/products", defaults: new { controller = "ApiCatalog", action = "GetProductsByIds" });
-            routes.MapLocalizedStorefrontRoute("API.Catalog.GetCategoriesByIds", "storefrontapi/categories", defaults: new { controller = "ApiCatalog", action = "GetCategoriesByIds" });
+            routes.For<ApiCatalogController>()
+                .CreateRoute("{store?}/{language?}/storefrontapi/catalog/search").To(c => c.SearchProducts(null)).WithConstraints().HttpMethod(HttpMethod.Post)
+                .CreateRoute("{store?}/{language?}/storefrontapi/products").To(c => c.GetProductsByIds(null, Model.Catalog.ItemResponseGroup.ItemLarge))
+                .CreateRoute("{store?}/{language?}/storefrontapi/categories").To(c => c.GetCategoriesByIds(null, Model.Catalog.CategoryResponseGroup.Full));
 
-            //Common storefront API
-            routes.MapLocalizedStorefrontRoute("API.Common.GetCountries", "storefrontapi/countries", defaults: new { controller = "ApiCommon", action = "GetCountries" });
-            routes.MapLocalizedStorefrontRoute("API.Common.GetCountryRegions", "storefrontapi/countries/{countryCode}/regions", defaults: new { controller = "ApiCommon", action = "GetCountryRegions" });
+            routes.For<ApiCommonController>()
+                .CreateRoute("{store?}/{language?}/storefrontapi/countries").To(c => c.GetCountries())
+                .CreateRoute("{store?}/{language?}/storefrontapi/countries/{countryCode}/regions").To(c => c.GetCountryRegions(null));
 
-            //Pricing API
-            routes.MapLocalizedStorefrontRoute("API.Pricing.GetActualProductPrices", "storefrontapi/pricing/actualprices", defaults: new { controller = "ApiPricing", action = "GetActualProductPrices" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            //Marketing API
-            routes.MapLocalizedStorefrontRoute("API.Marketing.GetDynamicContent", "storefrontapi/marketing/dynamiccontent/{placeName}", defaults: new { controller = "ApiMarketing", action = "GetDynamicContent" });
-            //Account API
-            routes.MapLocalizedStorefrontRoute("API.Account.GetCurrentCustomer", "storefrontapi/account", defaults: new { controller = "ApiAccount", action = "GetCurrentCustomer" });
-           
-            //Quote requests API
-            routes.MapLocalizedStorefrontRoute("API.QuoteRequest.GetItemsCount", "storefrontapi/quoterequests/{number}/itemscount", defaults: new { controller = "ApiQuoteRequest", action = "GetItemsCount" });
-            routes.MapLocalizedStorefrontRoute("API.QuoteRequest.Get", "storefrontapi/quoterequests/{number}", defaults: new { controller = "ApiQuoteRequest", action = "Get" });
-            routes.MapLocalizedStorefrontRoute("API.QuoteRequest.GetCurrent", "storefrontapi/quoterequest/current", defaults: new { controller = "ApiQuoteRequest", action = "GetCurrent" });
-            routes.MapLocalizedStorefrontRoute("API.QuoteRequest.AddItem", "storefrontapi/quoterequests/current/items", defaults: new { controller = "ApiQuoteRequest", action = "AddItem" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            routes.MapLocalizedStorefrontRoute("API.QuoteRequest.RemoveItem", "storefrontapi/quoterequests/{number}/items/{itemId}", defaults: new { controller = "ApiQuoteRequest", action = "RemoveItem" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "DELETE" }) });
-            routes.MapLocalizedStorefrontRoute("API.QuoteRequest.Update", "storefrontapi/quoterequests/{number}", defaults: new { controller = "ApiQuoteRequest", action = "Update" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "PUT" }) });
-            routes.MapLocalizedStorefrontRoute("API.QuoteRequest.Submit", "storefrontapi/quoterequests/{number}/submit", defaults: new { controller = "ApiQuoteRequest", action = "Submit" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            routes.MapLocalizedStorefrontRoute("API.QuoteRequest.Reject", "storefrontapi/quoterequests/{number}/reject", defaults: new { controller = "ApiQuoteRequest", action = "Reject" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            routes.MapLocalizedStorefrontRoute("API.QuoteRequest.CalculateTotals", "storefrontapi/quoterequests/{number}/totals", defaults: new { controller = "ApiQuoteRequest", action = "CalculateTotals" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            routes.MapLocalizedStorefrontRoute("API.QuoteRequest.Confirm", "storefrontapi/quoterequests/{number}/confirm", defaults: new { controller = "ApiQuoteRequest", action = "Confirm" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
+            routes.For<ApiPricingController>()
+                .CreateRoute("{store?}/{language?}/storefrontapi/pricing/actualprices").To(c => c.GetActualProductPrices(null));
 
-            #endregion
+            routes.For<ApiMarketingController>()
+                .CreateRoute("{store?}/{language?}/storefrontapi/marketing/dynamiccontent/{placeName}").To(c => c.GetDynamicContent(null));
 
-            //Account
-            routes.MapLocalizedStorefrontRoute("Account", "account", defaults: new { controller = "Account", action = "GetAccount" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "GET" }) });
-            routes.MapLocalizedStorefrontRoute("Account.UpdateAccount", "account", defaults: new { controller = "Account", action = "UpdateAccount" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            routes.MapLocalizedStorefrontRoute("Account.GetOrderDetails ", "account/order/{number}", defaults: new { controller = "Account", action = "GetOrderDetails" });
-            routes.MapLocalizedStorefrontRoute("Account.UpdateAddress", "account/addresses/{id}", defaults: new { controller = "Account", action = "UpdateAddress", id = UrlParameter.Optional }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            routes.MapLocalizedStorefrontRoute("Account.GetAddresses", "account/addresses", defaults: new { controller = "Account", action = "GetAddresses" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "GET" }) });
-            routes.MapLocalizedStorefrontRoute("Account.Register", "account/register", defaults: new { controller = "Account", action = "Register" });
-            routes.MapLocalizedStorefrontRoute("Account.Login", "account/login", defaults: new { controller = "Account", action = "Login" });
-            routes.MapLocalizedStorefrontRoute("Account.Logout", "account/logout", defaults: new { controller = "Account", action = "Logout" });
-            routes.MapLocalizedStorefrontRoute("Account.ForgotPassword", "account/forgotpassword", defaults: new { controller = "Account", action = "ForgotPassword" });
-            routes.MapLocalizedStorefrontRoute("Account.ResetPassword", "account/resetpassword", defaults: new { controller = "Account", action = "ResetPassword" });
-            routes.MapLocalizedStorefrontRoute("Account.ChangePassword", "account/password", defaults: new { controller = "Account", action = "ChangePassword" });
-        
+            routes.For<ApiAccountController>()
+                .CreateRoute("{store?}/{language?}/storefrontapi/account").To(c => c.GetCurrentCustomer());
 
-            //Cart
-            routes.MapLocalizedStorefrontRoute("Cart.Index", "cart", defaults: new { controller = "Cart", action = "Index" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "GET" }) });
-            routes.MapLocalizedStorefrontRoute("Cart.Checkout", "cart/checkout", defaults: new { controller = "Cart", action = "Checkout" });
-            routes.MapLocalizedStorefrontRoute("Cart.ExternalPaymentCallback", "cart/externalpaymentcallback", defaults: new { controller = "Cart", action = "ExternalPaymentCallback" });
-            routes.MapLocalizedStorefrontRoute("Cart.Thanks", "cart/thanks/{orderNumber}", defaults: new { controller = "Cart", action = "Thanks" });
-            routes.MapLocalizedStorefrontRoute("Cart.PaymentForm", "cart/checkout/paymentform", defaults: new { controller = "Cart", action = "PaymentForm" });
-            //Cart (Shopify compatible)
-            routes.MapLocalizedStorefrontRoute("ShopifyCart.Cart", "cart", defaults: new { controller = "ShopifyCompatibility", action = "Cart" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            routes.MapLocalizedStorefrontRoute("ShopifyCart.CartJs", "cart.js", defaults: new { controller = "ShopifyCompatibility", action = "CartJs" });
-            routes.MapLocalizedStorefrontRoute("ShopifyCart.Add", "cart/add", defaults: new { controller = "ShopifyCompatibility", action = "Add" });
-            routes.MapLocalizedStorefrontRoute("ShopifyCart.AddJs", "cart/add.js", defaults: new { controller = "ShopifyCompatibility", action = "AddJs" });
-            routes.MapLocalizedStorefrontRoute("ShopifyCart.Change", "cart/change", defaults: new { controller = "ShopifyCompatibility", action = "Change" });
-            routes.MapLocalizedStorefrontRoute("ShopifyCart.ChangeJs", "cart/change.js", defaults: new { controller = "ShopifyCompatibility", action = "ChangeJs" });
-            routes.MapLocalizedStorefrontRoute("ShopifyCart.Clear", "cart/clear", defaults: new { controller = "ShopifyCompatibility", action = "Clear" }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "GET" }) });
-            routes.MapLocalizedStorefrontRoute("ShopifyCart.ClearJs", "cart/clear.js", defaults: new { controller = "ShopifyCompatibility", action = "ClearJs" });
-            routes.MapLocalizedStorefrontRoute("ShopifyCart.UpdateJs", "cart/update.js", defaults: new { controller = "ShopifyCompatibility", action = "UpdateJs" });
+            routes.For<ApiQuoteRequestController>()
+                .CreateRoute("{store?}/{language?}/storefrontapi/quoterequests/{number}/itemscount").To(c => c.GetItemsCount(null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/quoterequests/{number}").To(c => c.Get(null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/quoterequest/current").To(c => c.GetCurrent())
+                .CreateRoute("{store?}/{language?}/storefrontapi/quoterequests/current/items").To(c => c.AddItem(null, 1))
+                .CreateRoute("{store?}/{language?}/storefrontapi/quoterequests/{number}/items/{itemId}").To(c => c.RemoveItem(null, null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/quoterequests/{number}").To(c => c.Update(null, null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/quoterequests/{number}/submit").To(c => c.Submit(null, null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/quoterequests/{number}/reject").To(c => c.Reject(null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/quoterequests/{number}/totals").To(c => c.CalculateTotals(null, null))
+                .CreateRoute("{store?}/{language?}/storefrontapi/quoterequests/{number}/confirm").To(c => c.Confirm(null, null));
 
-            // QuoteRequest
-          
-            routes.MapLocalizedStorefrontRoute("QuoteRequest.CurrentQuoteRequest", "quoterequest", defaults: new { controller = "QuoteRequest", action = "CurrentQuoteRequest" });
-            routes.MapLocalizedStorefrontRoute("Account.QuoteRequests", "account/quoterequests", defaults: new { controller = "QuoteRequest", action = "QuoteRequests" });
-            routes.MapLocalizedStorefrontRoute("Account.QuoteRequestByNumber", "quoterequest/{number}", defaults: new { controller = "QuoteRequest", action = "QuoteRequestByNumber" });
+            routes.For<AccountController>()
+                .CreateRoute("{store?}/{language?}/account").To(c => c.GetAccount()).WithConstraints().HttpMethod(HttpMethod.Get)
+                .CreateRoute("{store?}/{language?}/account").To(c => c.UpdateAccount(null)).WithConstraints().HttpMethod(HttpMethod.Post)
+                .CreateRoute("{store?}/{language?}/account/order/{number}").To(c => c.GetOrderDetails(null))
+                .CreateRoute("{store?}/{language?}/account/addresses/{id}").To(c => c.UpdateAddress(null, null))
+                .CreateRoute("{store?}/{language?}/account/addresses").To(c => c.GetAddresses())
+                .CreateRoute("{store?}/{language?}/account/register").To(c => c.Register())
+                .CreateRoute("{store?}/{language?}/account/login").To(c => c.Login(null))
+                .CreateRoute("{store?}/{language?}/account/logout").To(c => c.Logout())
+                .CreateRoute("{store?}/{language?}/account/forgotpassword").To(c => c.ForgotPassword(null))
+                .CreateRoute("{store?}/{language?}/account/resetpassword").To(c => c.ResetPassword(null))
+                .CreateRoute("{store?}/{language?}/account/password").To(c => c.ChangePassword(null));
 
-            //CatalogSearch
-            routes.MapLocalizedStorefrontRoute("CatalogSearch.CategoryBrowsing", "search/{categoryId}", defaults: new { controller = "CatalogSearch", action = "CategoryBrowsing" });
-            routes.MapLocalizedStorefrontRoute("CatalogSearch.SearchProducts", "search", defaults: new { controller = "CatalogSearch", action = "SearchProducts" });
-            //Common
-            routes.MapLocalizedStorefrontRoute("Common.SetCurrency", "common/setcurrency/{currency}", defaults: new { controller = "Common", action = "SetCurrency" });
-            routes.MapLocalizedStorefrontRoute("Common.ContactUsPost", "contact/{viewName}", defaults: new { controller = "Common", action = "СontactUs", viewName = UrlParameter.Optional }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "POST" }) });
-            routes.MapLocalizedStorefrontRoute("Common.ContactUs", "contact/{viewName}", defaults: new { controller = "Common", action = "СontactUs", viewName = UrlParameter.Optional }, constraints: new { httpMethod = new HttpMethodConstraint(new string[] { "GET" }) });
-            routes.MapLocalizedStorefrontRoute("Common.NoStore", "common/nostore", defaults: new { controller = "Common", action = "NoStore" });
-            routes.MapLocalizedStorefrontRoute("Common.Maintenance", "maintenance", defaults: new { controller = "Common", action = "Maintenance" });
+            routes.For<CartController>()
+                .CreateRoute("{store?}/{language?}/cart").To(c => c.Index()).WithConstraints().HttpMethod(HttpMethod.Get)
+                .CreateRoute("{store?}/{language?}/cart/checkout").To(c => c.Checkout())
+                .CreateRoute("{store?}/{language?}/cart/externalpaymentcallback").To(c => c.ExternalPaymentCallback())
+                .CreateRoute("{store?}/{language?}/cart/thanks/{orderNumber}").To(c => c.Thanks(null))
+                .CreateRoute("{store?}/{languahe?}/cart/checkout/paymentform").To(c => c.PaymentForm(null));
 
-         
-            //Product routes
-            routes.MapLocalizedStorefrontRoute("Product.GetProduct", "product/{productId}", defaults: new { controller = "Product", action = "ProductDetails" });
-            routes.MapLocalizedStorefrontRoute("Product.GetProductJson", "product/{productId}/json", defaults: new { controller = "Product", action = "ProductDetailsJson" });
-            //Assets
-            routes.MapLocalizedStorefrontRoute("Assets", "themes/assets/{asset}", defaults: new { controller = "Asset", action = "GetAssets" });
-            routes.MapLocalizedStorefrontRoute("GlobalAssets", "themes/global/assets/{asset}", defaults: new { controller = "Asset", action = "GetGlobalAssets" });
+            routes.For<ShopifyCompatibilityController>()
+                .CreateRoute("{store?}/{language?}/cart").To(c => c.Cart(null, null)).WithConstraints().HttpMethod(HttpMethod.Post)
+                .CreateRoute("{store?}/{language?}/cart.js").To(c => c.CartJs())
+                .CreateRoute("{store?}/{language?}/cart/add").To(c => c.Add(null, 1))
+                .CreateRoute("{store?}/{language?}/cart/add.js").To(c => c.AddJs(null, 1))
+                .CreateRoute("{store?}/{language?}/cart/change").To(c => c.Change(0, 0))
+                .CreateRoute("{store?}/{language?}/cart/change.js").To(c => c.ChangeJs(null, 0))
+                .CreateRoute("{store?}/{language?}/cart/clear").To(c => c.Clear()).WithConstraints().HttpMethod(HttpMethod.Get)
+                .CreateRoute("{store?}/{language?}/cart/clear.js").To(c => c.ClearJs())
+                .CreateRoute("{store?}/{language?}/cart/update.js").To(c => c.UpdateJs(null));
 
-            //Static content (no cms)
-            routes.MapLocalizedStorefrontRoute("Pages.GetPage", "pages/{page}", defaults: new { controller = "Page", action = "GetContentPageByName" });
-            routes.MapLocalizedStorefrontRoute("Blogs.GetBlog", "blogs/{blog}", defaults: new { controller = "Blog", action = "GetBlog" });
-            routes.MapLocalizedStorefrontRoute("Blogs.GetBlogArticle", "blogs/{blog}/{article}", defaults: new { controller = "Blog", action = "GetBlogArticle" });
+            routes.For<QuoteRequestController>()
+                .CreateRoute("{store?}/{language?}/quoterequest").To(c => c.CurrentQuoteRequest())
+                .CreateRoute("{store?}/{language?}/account/quoterequests").To(c => c.QuoteRequests())
+                .CreateRoute("{store?}/{language?}/quoterequest/{number}").To(c => c.QuoteRequestByNumber(null));
+
+            routes.For<CatalogSearchController>()
+                .CreateRoute("{store?}/{language?}/search/{categoryId}").To(c => c.CategoryBrowsing(null, null))
+                .CreateRoute("{store?}/{language?}/search").To(c => c.SearchProducts());
+
+            routes.For<CommonController>()
+                .CreateRoute("{store?}/{language?}/common/setcurrency/{currency}").To(c => c.SetCurrency("USD", null))
+                .CreateRoute("{store?}/{language?}/contact/{viewName}").To(c => c.СontactUs("page.contact")).WithConstraints().HttpMethod(HttpMethod.Get)
+                .CreateRoute("{store?}/{language?}/contact/{viewName}").To(c => c.СontactUs(null, "page.contact")).WithConstraints().HttpMethod(HttpMethod.Post)
+                .CreateRoute("{store?}/{language?}/common/nostore").To(c => c.NoStore())
+                .CreateRoute("{store?}/{language?}/maintenance").To(c => c.Maintenance());
+
+            routes.For<ProductController>()
+                .CreateRoute("{store?}/{language?}/product/{productId}").To(c => c.ProductDetails(null));
+
+            routes.For<AssetController>()
+                .CreateRoute("{store?}/{language?}/themes/assets/{asset}").To(c => c.GetAssets(null))
+                .CreateRoute("{store?}/{language?}/themes/global/assets/{asset}").To(c => c.GetGlobalAssets(null));
+
+            routes.For<PageController>()
+                .CreateRoute("{store?}/{language?}/pages/{page}").To(c => c.GetContentPageByName(null));
+
+            routes.For<BlogController>()
+                .CreateRoute("{store?}/{language?}/blogs/{blog}").To(c => c.GetBlog(null))
+                .CreateRoute("{store?}/{language?}/blogs/{blog}/{article}").To(c => c.GetBlogArticle(null, null));
+
+            #pragma warning restore 4014
 
             Func<string, Route> seoRouteFactory = url => new SeoRoute(url, new MvcRouteHandler(), workContextFactory, commerceCoreApi, staticContentService, cacheManager);
             routes.MapLocalizedStorefrontRoute(name: "SeoRoute", url: "{*path}", defaults: new { controller = "StorefrontHome", action = "Index" }, constraints: null, routeFactory: seoRouteFactory);
-            
         }
     }
 }
