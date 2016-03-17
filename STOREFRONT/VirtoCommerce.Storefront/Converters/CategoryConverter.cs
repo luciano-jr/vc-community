@@ -2,6 +2,7 @@
 using System.Linq;
 using Omu.ValueInjecter;
 using VirtoCommerce.Client.Model;
+using VirtoCommerce.Storefront.Common;
 using VirtoCommerce.Storefront.Model;
 using VirtoCommerce.Storefront.Model.Catalog;
 using VirtoCommerce.Storefront.Model.Common;
@@ -10,13 +11,20 @@ namespace VirtoCommerce.Storefront.Converters
 {
     public static class CategoryConverter
     {
-        public static Category ToWebModel(this VirtoCommerceCatalogModuleWebModelCategory category, Language currentLanguage, VirtoCommerceCatalogModuleWebModelProduct[] products = null)
+        public static Category ToWebModel(this VirtoCommerceCatalogModuleWebModelCategory category, Language currentLanguage, Store store, VirtoCommerceCatalogModuleWebModelProduct[] products = null)
         {
             var retVal = new Category();
             retVal.InjectFrom<NullableAndEnumValueInjecter>(category);
 
             if (category.SeoInfos != null)
-                retVal.SeoInfo = category.SeoInfos.Select(s => s.ToWebModel()).FirstOrDefault(x => x.Language == currentLanguage);
+            {
+                //Select best matched SEO by StoreId and Language
+                var bestMatchSeo = category.SeoInfos.FindBestSeoMatch(currentLanguage, store);
+                if(bestMatchSeo != null)
+                {
+                    retVal.SeoInfo = bestMatchSeo.ToWebModel();
+                }
+            }
 
             if (category.Images != null)
             {
