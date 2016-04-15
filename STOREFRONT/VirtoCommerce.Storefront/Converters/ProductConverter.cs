@@ -54,6 +54,11 @@ namespace VirtoCommerce.Storefront.Converters
                 retVal.Variations = product.Variations.Select(v => v.ToWebModel(currentLanguage, currentCurrency, store)).ToList();
             }
 
+            if(!product.Associations.IsNullOrEmpty())
+            {
+                retVal.Associations.AddRange(product.Associations.Select(x => x.ToWebModel()));
+            }
+
             retVal.SeoInfo = product.SeoInfos.GetBestMatchedSeoInfo(store, currentLanguage).ToWebModel();
             retVal.Url = "~/" + product.Outlines.GetSeoPath(store, currentLanguage, "product/" + product.Id);
 
@@ -64,13 +69,13 @@ namespace VirtoCommerce.Storefront.Converters
                     Language = new Language(r.LanguageCode),
                     ReviewType = r.ReviewType,
                     Value = r.Content
-                }).ToList();
+                }).Where(x=>x.Language.Equals(currentLanguage)).ToList();
                 retVal.Description = retVal.Descriptions.FindWithLanguage(currentLanguage, x => x.Value, null);
             }
 
             return retVal;
         }
-
+        
         public static QuoteItem ToQuoteItem(this Product product, long quantity)
         {
             var quoteItem = new QuoteItem();

@@ -1125,7 +1125,7 @@ fieldset + fieldset
         font-size: 12px;
     }
 
-    .form-group .form-error
+    .form-error
     {
         color: #e51400;
         font-size: 12px;
@@ -1133,7 +1133,7 @@ fieldset + fieldset
         padding: 5px 0;
     }
 
-        .form-group .form-error *
+        .form-error *
         {
             display: block;
         }
@@ -3567,6 +3567,7 @@ button.btn
     .form-input.__calendar .dropdown-menu .btn
     {
         background: #fbfdfe;
+        color: #4c4c4c;
         font-size: 14px;
         font-weight: 400;
         position: static;
@@ -3589,6 +3590,7 @@ button.btn
         }
 
         .form-input.__calendar .dropdown-menu .btn-group .btn,
+        .form-input.__calendar .dropdown-menu .btn-group ~ .btn,
         .form-input.__calendar .dropdown-menu .btn-success
         {
             background: #43b0e6;
@@ -5667,7 +5669,6 @@ input.ui-grid-filter-input[type="text"]
     .gridster .list-item
     {
         background: #fbfdfe;
-        cursor: move;
         padding: 2px;
         position: absolute;
         text-align: center;
@@ -5784,6 +5785,7 @@ input.ui-grid-filter-input[type="text"]
 
     .gridster [ng-model="widget"]
     {
+        cursor: move;
         height: 100%;
         width: 100%;
     }
